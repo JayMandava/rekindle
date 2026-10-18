@@ -3,7 +3,7 @@
 Sources (pick one):
   --airtable            read the Bookings table via the Airtable API (AIRTABLE_TOKEN, AIRTABLE_BASE_ID)
   --json bookings.json  a JSON list of Airtable-style rows (e.g. a saved export)
-Outputs data/babytrails/customers.csv and orders.csv, ready for `bq load` (see deploy/setup_gcp.sh),
+Outputs data/babytrails/customers.csv and orders.csv, ready for `bq load`,
 or run the local cockpit straight on the export:  REKINDLE_BOOKINGS_JSON=bookings.json uvicorn ...
 
 Customers come out with consent_whatsapp=0 unless the booking row has the `Re-engagement Opt-in` checkbox.

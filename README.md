@@ -47,13 +47,7 @@ Local mode runs the **same `sql/segments.sql`** against in-memory SQLite (a two-
 
 ## Run it on Google Cloud
 
-```bash
-export PROJECT=your-project REGION=us-central1
-./deploy/setup_gcp.sh      # APIs, BigQuery dataset/tables, Firestore, synthetic data, Looker view
-./deploy/deploy.sh         # Cloud Run, REKINDLE_MODE=gcp, SEND_MODE=dry_run
-```
-
-Then in Looker Studio create a data source on `rekindle.v_campaign_performance` (BigQuery). Real sending is off until you set `SEND_MODE=live` and provide the WhatsApp Cloud API and Gmail credentials in `.env.example`. WhatsApp outreach to dormant customers must use a pre-approved **Marketing** template; `rk_reengage_v1` (wording in the integration doc) has three variables: first name, merchant name, personalised sentence. Templates are approved per language, so the pilot is English-only.
+`REKINDLE_MODE=gcp` runs on BigQuery, Firestore and Vertex AI and needs a billing account. Create the dataset from `sql/schema.sql`, build the image from the `Dockerfile` (it listens on `$PORT`), and set the variables in `.env.example`. Then in Looker Studio create a data source on `rekindle.v_campaign_performance` (BigQuery). Real sending is off until you set `SEND_MODE=live` and provide the WhatsApp Cloud API and Gmail credentials in `.env.example`. WhatsApp outreach to dormant customers must use a pre-approved **Marketing** template; `rk_reengage_v1` (wording in the integration doc) has three variables: first name, merchant name, personalised sentence. Templates are approved per language, so the pilot is English-only.
 
 ## Test Firestore with no cloud at all (Firebase emulator)
 
@@ -75,8 +69,6 @@ export GOOGLE_APPLICATION_CREDENTIALS_JSON="$(cat serviceAccountKey.json)"   # o
 python scripts/live_check.py                   # preflight: real drafts through the real guardrail, Firestore round trip
 uvicorn rekindle.api:app_factory --factory --port 8080
 ```
-
-**One-paste version for Google Cloud Shell** (already signed in as you; creates a least-privilege service account with a temporary key, asks for your Gemini key hidden, runs the check, deletes the key): `./deploy/spark_bootstrap.sh YOUR_FIREBASE_PROJECT_ID`. The control flow is tested against a stubbed `gcloud`; it has not run against real Google Cloud.
 
 What this does not cover: Cloud Run, BigQuery and Looker Studio need a billing account, so on Spark the app runs on your machine and segmentation uses the same SQL on SQLite. **Use synthetic or masked data only**: Google's free Gemini API tier may use requests to improve its products (verify the current terms), and the free tier has low rate limits. Pieces can be mixed with `REKINDLE_DATA` (local|bigquery), `REKINDLE_STORE` (memory|firestore) and `REKINDLE_LLM` (offline|apikey|vertex).
 
@@ -103,7 +95,7 @@ What this does not cover: Cloud Run, BigQuery and Looker Studio need a billing a
 - The verifier is lexical and rule-based. It cannot see a paraphrased falsehood that uses none of the patterns above ("Aarav must be walking by now"). A Gemini entailment check as a second layer is the planned next step.
 - Capitalised-name checks do not apply to non-Latin scripts; numbers, offers, links and recollection rules still do.
 - Offer wording (`Merchant.offers`) and journey timings are placeholders until the studio approves them.
-- The cockpit has no authentication. Put it behind IAP or Firebase Auth before real customer data (`deploy.sh` says so).
+- The cockpit has no authentication. Put it behind IAP or Firebase Auth before real customer data.
 - "Time saved" assumes 3 minutes per hand-written message (`ASSUMED_MINUTES_PER_MESSAGE`).
 - Attribution is last-touch within 30 days.
 
@@ -113,5 +105,5 @@ What this does not cover: Cloud Run, BigQuery and Looker Studio need a billing a
 rekindle/   config, models, babytrails (adapter), segmentation, consent, drafting (Gemini + offline), verifier, routing, engine, store, channels, api, demo, ui/
 sql/        segments.sql (BigQuery + SQLite), schema.sql, dashboard.sql
 tests/      69 tests          scripts/  eval_guardrail.py, import_babytrails.py, build_deck.py
-deploy/     setup_gcp.sh, deploy.sh      docs/  deck, diagrams, screens, guardrail_eval.json
+docs/       deck, diagrams, screens, guardrail_eval.json
 ```
