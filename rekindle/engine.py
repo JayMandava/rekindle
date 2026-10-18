@@ -11,7 +11,7 @@ from typing import Optional
 
 from .babytrails import bookings_to_rows
 from .channels import Sender, make_sender
-from .config import Merchant, Settings
+from .config import Merchant, Settings, ensure_credentials
 from .datasource import BigQueryDataSource, DataSource, LocalDataSource
 from .drafting import Drafter, choose_channel, make_drafter, render
 from .models import Draft, DraftOut, Route, Status, Target
@@ -35,13 +35,17 @@ class Engine:
     def build(cls, settings: Optional[Settings] = None) -> "Engine":
         s = settings or Settings()
         m = Merchant()
-        if s.is_gcp:
-            return cls(s, m, BigQueryDataSource(s), FirestoreStore(s.project, s.bq_dataset), make_drafter(s), make_sender(s, m))
-        if os.getenv("REKINDLE_BOOKINGS_JSON"):   # run the local cockpit on a real Baby Trails export
-            c, o = bookings_to_rows(json.loads(Path(os.environ["REKINDLE_BOOKINGS_JSON"]).read_text()))
+        ensure_credentials()
+        if s.data == "bigquery":
+            ds: DataSource = BigQueryDataSource(s)
         else:
-            c, o = generate(s.as_of)
-        return cls(s, m, LocalDataSource(c, o), MemoryStore(), make_drafter(s), make_sender(s, m))
+            if os.getenv("REKINDLE_BOOKINGS_JSON"):   # run on a real Baby Trails export
+                c, o = bookings_to_rows(json.loads(Path(os.environ["REKINDLE_BOOKINGS_JSON"]).read_text()))
+            else:
+                c, o = generate(s.as_of)
+            ds = LocalDataSource(c, o)
+        store: Store = FirestoreStore(s.project, s.bq_dataset if s.data == "bigquery" else None) if s.store == "firestore" else MemoryStore()
+        return cls(s, m, ds, store, make_drafter(s), make_sender(s, m))
 
     # -- data -----------------------------------------------------------------------------------
     def rows(self, refresh: bool = True) -> list[dict]:
@@ -264,5 +268,5 @@ class Engine:
             "recovered_revenue": round(recovered, 2), "converted_customers": len(converted),
             "attribution_days": ATTRIBUTION_DAYS,
             "trust": trust.to_dict(),
-            "synthetic": not self.settings.is_gcp,
+            "synthetic": self.settings.data == "local" and not os.getenv("REKINDLE_BOOKINGS_JSON"),
         }

@@ -51,12 +51,16 @@ class MemoryStore:
 class FirestoreStore:
     """Firestore is the real-time source for the cockpit; events are also appended to BigQuery for Looker Studio."""
 
-    def __init__(self, project: str, bq_dataset: str):
-        from google.cloud import bigquery, firestore
+    def __init__(self, project: str, bq_dataset: Optional[str] = None):
+        from google.cloud import firestore
 
         self.db = firestore.Client(project=project or None)
-        self.bq = bigquery.Client(project=project or None)
-        self.events_table = f"{project}.{bq_dataset}.events" if project else f"{bq_dataset}.events"
+        self.bq = None   # BigQuery is optional: without it (Spark plan) events live only in Firestore
+        if bq_dataset:
+            from google.cloud import bigquery
+
+            self.bq = bigquery.Client(project=project or None)
+            self.events_table = f"{project}.{bq_dataset}.events" if project else f"{bq_dataset}.events"
 
     def put_draft(self, d): self.db.collection("drafts").document(d.id).set(d.model_dump(mode="json"))
 
@@ -83,6 +87,8 @@ class FirestoreStore:
     def add_event(self, kind, **fields):
         ev = {"ts": now(), "kind": kind, **fields}
         self.db.collection("events").add(ev)
+        if self.bq is None:
+            return
         row = {k: (v.isoformat() if isinstance(v, datetime) else v) for k, v in ev.items()
                if k in ("ts", "kind", "customer_id", "draft_id", "segment", "channel", "route",
                         "risk_tier", "confidence", "amount", "detail")}

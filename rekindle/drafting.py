@@ -36,7 +36,10 @@ class GeminiDrafter:
         from google import genai
 
         self.types = __import__("google.genai.types", fromlist=["types"])
-        self.client = genai.Client(vertexai=True, project=settings.project, location=settings.gemini_location)
+        if settings.llm == "apikey":      # Gemini Developer API (AI Studio key): works without a billing account
+            self.client = genai.Client(api_key=settings.gemini_api_key)
+        else:                             # Vertex AI: needs a billing-enabled project
+            self.client = genai.Client(vertexai=True, project=settings.project, location=settings.gemini_location)
         self.thinking = settings.gemini_thinking
         self.model = settings.gemini_model
         self.name = f"gemini:{settings.gemini_model}"
@@ -145,7 +148,7 @@ class OfflineDrafter:
 
 
 def make_drafter(settings: Settings) -> Drafter:
-    return GeminiDrafter(settings) if settings.is_gcp else OfflineDrafter(settings.chaos)
+    return GeminiDrafter(settings) if settings.llm != "offline" else OfflineDrafter(settings.chaos)
 
 
 # --- deterministic rendering (template + compliance lines are never LLM-written) -----------------

@@ -38,7 +38,7 @@ Measured on the synthetic dataset with `python scripts/eval_guardrail.py`: 13 co
 
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest -q                                   # 65 tests
+python -m pytest -q                                   # 69 tests
 REKINDLE_AS_OF=2026-10-18 uvicorn rekindle.api:app_factory --factory --port 8080
 # open http://localhost:8080 and click "Load demo scenario"
 ```
@@ -55,14 +55,29 @@ export PROJECT=your-project REGION=us-central1
 
 Then in Looker Studio create a data source on `rekindle.v_campaign_performance` (BigQuery). Real sending is off until you set `SEND_MODE=live` and provide the WhatsApp Cloud API and Gmail credentials in `.env.example`. WhatsApp outreach to dormant customers must use a pre-approved **Marketing** template; `rk_reengage_v1` (wording in the integration doc) has three variables: first name, merchant name, personalised sentence. Templates are approved per language, so the pilot is English-only.
 
+## Run it with no billing account (Firebase Spark plan)
+
+For testing the real Gemini and Firestore without a billing-enabled project:
+
+```bash
+export REKINDLE_MODE=spark                     # SQLite data + Firestore store + Gemini through an API key
+export GEMINI_API_KEY=...                      # https://aistudio.google.com/apikey
+export GOOGLE_CLOUD_PROJECT=your-firebase-project-id
+export GOOGLE_APPLICATION_CREDENTIALS_JSON="$(cat serviceAccountKey.json)"   # or GOOGLE_APPLICATION_CREDENTIALS=path
+python scripts/live_check.py                   # preflight: real drafts through the real guardrail, Firestore round trip
+uvicorn rekindle.api:app_factory --factory --port 8080
+```
+
+What this does not cover: Cloud Run, BigQuery and Looker Studio need a billing account, so on Spark the app runs on your machine and segmentation uses the same SQL on SQLite. **Use synthetic or masked data only**: Google's free Gemini API tier may use requests to improve its products (verify the current terms), and the free tier has low rate limits. Pieces can be mixed with `REKINDLE_DATA` (local|bigquery), `REKINDLE_STORE` (memory|firestore) and `REKINDLE_LLM` (offline|apikey|vertex).
+
 ## Status: what is and is not verified
 
 | Part | Status |
 |---|---|
-| Segmentation SQL, opt-in/STOP, verifier, router, trust learning, engine, API, cockpit | Tested (65 tests) and exercised end to end locally |
+| Segmentation SQL, opt-in/STOP, verifier, router, trust learning, engine, API, cockpit | Tested (69 tests) and exercised end to end locally |
 | Baby Trails adapter (`babytrails.py`, `import_babytrails.py`) | Tested against Airtable-shaped rows written from Baby Trails' source; **not yet run against the live Airtable base** |
 | `sql/*.sql` | Parsed as valid BigQuery SQL (sqlglot); **not yet run against BigQuery** |
-| Gemini adapter | Request config and structured-output schema validated against the real SDK; call logic tested with a fake client; **not yet run against live Gemini** |
+| Gemini adapter (Gemini 3.8 Flash; Vertex or API key) | Request config and structured-output schema validated against the real SDK; call logic tested with a fake client; reaches Google's endpoint but **not yet run with valid credentials**. `scripts/live_check.py` is the preflight |
 | Firestore store, BigQuery data source/events | Implemented; **not yet run against real services** |
 | WhatsApp Cloud API and Gmail senders | Implemented; **not exercised** (dry-run is the default) |
 | Dockerfile, deploy scripts | Written; **not yet run** |
@@ -86,6 +101,6 @@ Then in Looker Studio create a data source on `rekindle.v_campaign_performance` 
 ```
 rekindle/   config, models, babytrails (adapter), segmentation, consent, drafting (Gemini + offline), verifier, routing, engine, store, channels, api, demo, ui/
 sql/        segments.sql (BigQuery + SQLite), schema.sql, dashboard.sql
-tests/      65 tests          scripts/  eval_guardrail.py, import_babytrails.py, build_deck.py
+tests/      69 tests          scripts/  eval_guardrail.py, import_babytrails.py, build_deck.py
 deploy/     setup_gcp.sh, deploy.sh      docs/  deck, diagrams, screens, guardrail_eval.json
 ```

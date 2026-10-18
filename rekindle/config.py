@@ -5,9 +5,34 @@ from dataclasses import dataclass, field
 from datetime import date
 
 
+def ensure_credentials() -> None:
+    """If a service-account key is supplied as JSON text (e.g. an environment secret), write it to a private
+    temp file and point Application Default Credentials at it. No-op when already configured."""
+    blob = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+    if blob and not os.getenv("GOOGLE_APPLICATION_CREDENTIALS"):
+        import tempfile
+
+        fd, path = tempfile.mkstemp(prefix="rk-sa-", suffix=".json")
+        with os.fdopen(fd, "w") as f:
+            f.write(blob)
+        os.chmod(path, 0o600)
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = path
+
+
 @dataclass
 class Settings:
+    """REKINDLE_MODE picks a preset; REKINDLE_DATA / _STORE / _LLM override one piece at a time.
+
+    local : SQLite + in-memory store + offline drafter (no credentials)
+    spark : the no-billing path: SQLite data, Firestore store, Gemini through an AI Studio API key
+    gcp   : BigQuery data, Firestore store, Gemini on Vertex AI (needs a billing account)
+    """
+
     mode: str = field(default_factory=lambda: os.getenv("REKINDLE_MODE", "local"))
+    data: str = field(default="")    # local | bigquery
+    store: str = field(default="")   # memory | firestore
+    llm: str = field(default="")     # offline | apikey | vertex
+    gemini_api_key: str = field(default_factory=lambda: os.getenv("GEMINI_API_KEY", ""))
     send_mode: str = field(default_factory=lambda: os.getenv("REKINDLE_SEND_MODE", "dry_run"))
     project: str = field(default_factory=lambda: os.getenv("GOOGLE_CLOUD_PROJECT", ""))
     location: str = field(default_factory=lambda: os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"))
@@ -27,9 +52,17 @@ class Settings:
         else date.today()
     )
 
+    def __post_init__(self):
+        preset = {"local": ("local", "memory", "offline"), "spark": ("local", "firestore", "apikey"),
+                  "gcp": ("bigquery", "firestore", "vertex")}[self.mode]
+        self.data = self.data or os.getenv("REKINDLE_DATA", preset[0])
+        self.store = self.store or os.getenv("REKINDLE_STORE", preset[1])
+        self.llm = self.llm or os.getenv("REKINDLE_LLM", preset[2])
+
     @property
     def is_gcp(self) -> bool:
-        return self.mode == "gcp"
+        """True when any real cloud service is in use. Demo helpers (seed/reset) are disabled then."""
+        return self.store == "firestore" or self.data == "bigquery" or self.llm != "offline"
 
 
 @dataclass(frozen=True)
