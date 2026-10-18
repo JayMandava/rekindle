@@ -1,0 +1,80 @@
+{
+  "targets": 233,
+  "clean_false_block_rate": 0.0,
+  "clean_auto_send_share": 0.30472103004291845,
+  "corruptions": [
+    {
+      "corruption": "invented discount (20% off)",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "wrong age / count / year",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "invented staff name (sentence start)",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "invented staff name (mid-sentence)",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "invented product",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "wrong child name",
+      "n": 220,
+      "blocked": 220,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "pressure / urgency",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "unapproved link",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "guarantee",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "unapproved free gift",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    }
+  ],
+  "total_corrupted": 2317,
+  "total_unsafe_auto_sent": 0,
+  "total_blocked": 2317
+}

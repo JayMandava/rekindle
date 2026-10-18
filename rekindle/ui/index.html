@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27%23e8590c%27/%3E%3Cpath d=%27M16 7l8 16H8z%27 fill=%27white%27/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ReKindle Cockpit</title>
+<style>
+:root{
+  --bg:#f6f7f9; --card:#fff; --ink:#14181f; --muted:#5b6472; --line:#e3e7ee;
+  --brand:#e8590c; --brand-ink:#fff; --ok:#1a7f4b; --okbg:#e6f4ec; --warn:#a15c00; --warnbg:#fdf1dc;
+  --bad:#b42318; --badbg:#fde8e6; --info:#1f5fbf; --infobg:#e7effb; --mark:#fff2b3;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){
+  --bg:#0f1218; --card:#171b23; --ink:#eef1f6; --muted:#9aa4b2; --line:#272d38;
+  --ok:#5fd39a; --okbg:#12301f; --warn:#f0b35a; --warnbg:#35270d; --bad:#ff8a80; --badbg:#3a1714;
+  --info:#8ab4ff; --infobg:#14233d; --mark:#5b4b00;}}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px}
+.flame{width:26px;height:26px;border-radius:8px;background:var(--brand);display:grid;place-items:center;color:#fff;font-size:15px}
+.badges{display:flex;gap:6px;flex-wrap:wrap}
+.badge{font-size:11px;padding:2px 8px;border-radius:99px;border:1px solid var(--line);color:var(--muted);background:var(--card)}
+.badge.warn{background:var(--warnbg);color:var(--warn);border-color:transparent}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+button{font:inherit;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:7px 12px;cursor:pointer}
+button:hover{border-color:var(--muted)} button.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand);font-weight:600}
+button.ok{background:var(--ok);color:#fff;border-color:var(--ok);font-weight:600} button.danger{color:var(--bad)}
+button:disabled{opacity:.5;cursor:not-allowed}
+main{max-width:1280px;margin:0 auto;padding:18px 20px 60px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi .v{font-size:22px;font-weight:700;letter-spacing:-.02em} .kpi .l{color:var(--muted);font-size:12px} .kpi .s{color:var(--muted);font-size:11px;margin-top:2px}
+.grid{display:grid;grid-template-columns:320px 1fr;gap:14px;align-items:start} @media(max-width:900px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.panel h3{margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.seg{margin:8px 0}.seg .row{display:flex;justify-content:space-between;font-size:13px}.bar{height:6px;background:var(--line);border-radius:4px;margin-top:4px;overflow:hidden}.bar i{display:block;height:100%;background:var(--brand)}
+.trust{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);font-size:13px}
+.trust .meter{height:8px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0}.trust .meter i{display:block;height:100%;background:var(--ok)}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}.tab{padding:6px 12px;border-radius:99px;border:1px solid var(--line);cursor:pointer;background:var(--card);font-size:13px}.tab.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.card{border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px;background:var(--card)}
+.card .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.who{font-weight:600}.pill{font-size:11px;padding:2px 8px;border-radius:99px;margin-left:6px;background:var(--infobg);color:var(--info)}
+.pill.high{background:var(--badbg);color:var(--bad)}.pill.medium{background:var(--warnbg);color:var(--warn)}.pill.low{background:var(--okbg);color:var(--ok)}.pill.ch{background:var(--line);color:var(--muted)}
+.conf{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}.conf .b{width:70px;height:6px;background:var(--line);border-radius:4px;overflow:hidden}.conf .b i{display:block;height:100%}
+.bubble{margin:10px 0;padding:10px 12px;border-radius:12px;background:var(--okbg);white-space:pre-wrap;max-width:620px}
+.bubble.email{background:var(--bg);border:1px solid var(--line)} mark{background:var(--mark);color:inherit;border-radius:3px;padding:0 2px;cursor:help}
+.ground{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.chip{font-size:12px;border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--muted)}.chip b{color:var(--ink)}
+.issues{margin:6px 0;padding:8px 10px;border-radius:8px;background:var(--badbg);color:var(--bad);font-size:12.5px}.warns{margin:6px 0;padding:8px 10px;border-radius:8px;background:var(--warnbg);color:var(--warn);font-size:12.5px}
+.why{font-size:12px;color:var(--muted);margin:4px 0}
+textarea{width:100%;font:inherit;border:1px solid var(--line);border-radius:8px;padding:8px;background:var(--bg);color:var(--ink);min-height:70px}
+.btns{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.empty{color:var(--muted);text-align:center;padding:30px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--card);padding:10px 16px;border-radius:10px;font-size:13px;display:none;z-index:9;max-width:90vw}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><div class="flame">&#9650;</div>ReKindle <span style="font-weight:400;color:var(--muted);font-size:13px" id="merchant"></span></div>
+  <div class="badges" id="badges"></div>
+  <div class="actions">
+    <button id="btn-demo">Load demo scenario</button>
+    <button class="primary" id="btn-run">Run campaign</button>
+    <button id="btn-reset">Reset</button>
+  </div>
+</header>
+<main>
+  <div class="kpis" id="kpis"></div>
+  <div class="grid">
+    <div class="panel">
+      <h3>Customer base</h3><div id="segs"></div>
+      <div class="trust" id="trust"></div>
+    </div>
+    <div>
+      <div class="tabs" id="tabs"></div>
+      <div id="list"></div>
+    </div>
+  </div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const INR=n=>'₹'+Math.round(n).toLocaleString('en-IN');
+const SEGNAME={milestone_due:'Milestone coming up',champion_dormant:'Loyal & dormant',at_risk:'At risk',one_time_lapsed:'One-time, lapsed',lost:'Lost (>18 mo)',active:'Active (not contacted)'};
+let tab='needs_review', S=null;
+async function api(p,opt){const r=await fetch(p,{headers:{'Content-Type':'application/json'},...opt});const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.detail||r.statusText);return j}
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';clearTimeout(t._t);t._t=setTimeout(()=>t.style.display='none',3500)}
+
+function highlight(d){
+  let html=esc(d.rendered), seen=new Set();
+  for(const c of d.claims){
+    const f=d.facts.find(x=>x.id===c.fact_id); if(!f||seen.has(c.span))continue; seen.add(c.span);
+    const sp=esc(c.span); html=html.replace(sp,`<mark title="${esc(f.id+' · '+f.label+': '+f.value)}">${sp}</mark>`);
+  }
+  return html;
+}
+function card(d){
+  const v=d.verification, pending=d.status==='pending';
+  const col=v.confidence>=.8?'var(--ok)':v.confidence>=.6?'var(--warn)':'var(--bad)';
+  const cited=[...new Set(d.claims.map(c=>c.fact_id))].map(id=>d.facts.find(f=>f.id===id)).filter(Boolean);
+  const status=d.status==='sent'?`<span class="pill low">sent · ${esc(d.decision)}</span>`:d.status==='rejected'?`<span class="pill high">${esc(d.reject_reason||'rejected')}</span>`:d.status==='failed'?`<span class="pill high">${esc(d.reject_reason)}</span>`:'';
+  const route=d.risk.reasons.filter(r=>r.startsWith('route:')).map(r=>r.slice(7)).join('');
+  const why=d.risk.reasons.filter(r=>!r.startsWith('route:')&&!route.includes(r)).join(' · ');
+  return `<div class="card" data-id="${d.id}">
+   <div class="top"><div><span class="who">${esc(d.customer_name)}</span><span class="pill">${esc(SEGNAME[d.segment]||d.segment)}</span><span class="pill ch">${esc(d.channel)} · ${esc(d.language)}</span><span class="pill ${d.risk.tier}">${d.risk.tier} risk</span> ${status}</div>
+   <div class="conf">confidence <div class="b"><i style="width:${v.confidence*100}%;background:${col}"></i></div><b>${v.confidence.toFixed(2)}</b></div></div>
+   ${d.subject?`<div class="why">Subject: <b>${esc(d.subject)}</b></div>`:''}
+   <div class="bubble ${d.channel==='email'?'email':''}">${highlight(d)}</div>
+   <div class="ground">${cited.map(f=>`<span class="chip">${esc(f.id)} <b>${esc(f.label)}</b>: ${esc(f.value)}</span>`).join('')||'<span class="chip">no grounding cited</span>'}</div>
+   ${v.hard_issues.length?`<div class="issues"><b>Blocked by fact check:</b><br>${v.hard_issues.map(esc).join('<br>')}</div>`:''}
+   ${v.warnings.length?`<div class="warns">${v.warnings.map(esc).join('<br>')}</div>`:''}
+   <div class="why">Why this route: ${esc(route)}${why?` · risk: ${esc(why)}`:''}</div>
+   ${pending?`<textarea id="t-${d.id}" aria-label="Edit message text">${esc(d.text)}</textarea>
+   <div class="btns">${d.route==='blocked'?'':`<button class="ok" data-act="approve">Approve &amp; send</button>`}<button data-act="edit">${d.route==='blocked'?'Fix &amp; send':'Save edit &amp; send'}</button><button class="danger" data-act="reject">Reject</button></div>`:''}
+  </div>`;
+}
+function render(){
+  const k=S.kpis, syn=k.synthetic;
+  $('#merchant').textContent='· '+S.merchant;
+  $('#badges').innerHTML=[syn?'<span class="badge warn">Synthetic demo data</span>':'', `<span class="badge">${esc(S.mode)} mode</span>`,`<span class="badge">sending: ${esc(S.send_mode)}</span>`,`<span class="badge">drafter: ${esc(S.drafter)}</span>`].join('');
+  const kp=[
+   [INR(k.recovered_revenue),'Recovered revenue',`${k.converted_customers} customers, ${k.attribution_days}-day window${syn?' · simulated':''}`],
+   [k.sent,'Messages sent',`${k.auto_sent} auto · ${k.sent-k.auto_sent} approved`],
+   [Math.round(k.auto_send_rate*100)+'%','Auto-send rate','share sent without review'],
+   [k.needs_review,'Awaiting your review',''],
+   [k.blocked,'Stopped by fact check','ungrounded drafts never reach customers'],
+   [k.opt_outs,'Opt-outs honoured','suppressed before generation'],
+   [k.minutes_saved+' min','Time saved',`assumes ${k.assumed_minutes_per_message} min per message`],
+  ];
+  $('#kpis').innerHTML=kp.map(([v,l,s])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div><div class="s">${s}</div></div>`).join('');
+  const total=Math.max(1,...Object.values(S.segments));
+  const order=['milestone_due','champion_dormant','at_risk','one_time_lapsed','lost','active'];
+  $('#segs').innerHTML=order.filter(s=>s in S.segments).map(s=>`<div class="seg"><div class="row"><span>${SEGNAME[s]}</span><b>${S.segments[s]}</b></div><div class="bar"><i style="width:${S.segments[s]/total*100}%;${s==='active'?'background:var(--muted)':''}"></i></div></div>`).join('')+'<div class="why">Milestone overlaps other segments. Active customers are never nudged; lost customers rank last.</div>';
+  const t=k.trust, p=Math.min(100,t.decisions/t.warmup*100);
+  $('#trust').innerHTML=`<b>Autonomy</b><div class="meter"><i style="width:${p}%"></i></div>`+(t.auto_enabled
+   ?`Earned. Low-risk drafts with confidence &ge; <b>${t.threshold.toFixed(3)}</b> auto-send. Everything else still waits for you.`
+   :`Warm-up: ${t.decisions}/${t.warmup} decisions. Nothing auto-sends until you have reviewed ${t.warmup}.`)
+   +`<div class="why">${t.approved_unedited} approved · ${t.edited} edited · ${t.rejected} rejected. Edits and rejections raise the bar.</div>`;
+  const ds=window._drafts||[];
+  const tabs=[['needs_review','Needs review',ds.filter(d=>d.status==='pending'&&d.route==='needs_review').length],['blocked','Blocked',ds.filter(d=>d.route==='blocked').length],['sent','Sent',ds.filter(d=>d.status==='sent').length],['all','All',ds.length]];
+  $('#tabs').innerHTML=tabs.map(([id,n,c])=>`<div class="tab ${tab===id?'on':''}" data-tab="${id}">${n} · ${c}</div>`).join('');
+  const f={needs_review:d=>d.status==='pending'&&d.route==='needs_review',blocked:d=>d.route==='blocked',sent:d=>d.status==='sent',all:()=>true}[tab];
+  const list=ds.filter(f).slice(0,60);
+  $('#list').innerHTML=list.length?list.map(card).join(''):'<div class="empty panel">Nothing here yet. Run a campaign, or load the demo scenario.</div>';
+}
+async function load(){S=await api('/api/state');window._drafts=await api('/api/drafts');render()}
+async function busy(btn,fn){btn.disabled=true;try{await fn()}catch(e){toast(e.message)}finally{btn.disabled=false}}
+$('#btn-run').onclick=e=>busy(e.target,async()=>{const r=await api('/api/campaign/run',{method:'POST',body:JSON.stringify({limit:40})});toast(`Drafted ${r.drafted}: ${r.auto_sent} auto-sent, ${r.needs_review} for review, ${r.blocked} blocked, ${r.skipped_cooldown} skipped (recently contacted)`);await load()});
+$('#btn-demo').onclick=e=>busy(e.target,async()=>{await api('/api/demo/reset',{method:'POST'});await api('/api/demo/seed',{method:'POST'});toast('Demo loaded: owner decisions, replies and orders are simulated');await load()});
+$('#btn-reset').onclick=e=>busy(e.target,async()=>{await api('/api/demo/reset',{method:'POST'});await load()});
+document.addEventListener('click',e=>{
+  const t=e.target.closest('[data-tab]'); if(t){tab=t.dataset.tab;render();return}
+  const b=e.target.closest('[data-act]'); if(!b)return;
+  const id=b.closest('.card').dataset.id, act=b.dataset.act, ta=$('#t-'+id);
+  busy(b,async()=>{
+    if(act==='reject'){await api(`/api/drafts/${id}/reject`,{method:'POST',body:JSON.stringify({reason:'rejected by owner'})});}
+    else{const body=act==='edit'?{text:ta.value}:{};await api(`/api/drafts/${id}/approve`,{method:'POST',body:JSON.stringify(body)});toast('Sent');}
+    await load();
+  });
+});
+load().catch(e=>toast(e.message));
+</script>
+</body>
+</html>
