@@ -11,7 +11,7 @@ Built for the Google Cloud x Hack2skill **AI Builder Cup** (JAPAC). Pilot partne
 ```
 BigQuery (RFM + dormancy + journey)         deterministic: who, and when (from Baby Trails bookings)
    -> opt-in + suppression gate             deterministic: before any generation
-   -> Gemini on Vertex AI (response_schema) writes; every claim cites a fact id
+   -> Gemini 3.8 Flash on Vertex AI (response_schema) writes; every claim cites a fact id
    -> fact-verification guardrail           deterministic: numbers, names, offers, tone, memories
    -> risk tier + trust-earning router      deterministic
    -> owner cockpit (Firestore)  |  auto-send (low risk, earned trust)

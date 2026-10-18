@@ -36,7 +36,8 @@ class GeminiDrafter:
         from google import genai
 
         self.types = __import__("google.genai.types", fromlist=["types"])
-        self.client = genai.Client(vertexai=True, project=settings.project, location=settings.location)
+        self.client = genai.Client(vertexai=True, project=settings.project, location=settings.gemini_location)
+        self.thinking = settings.gemini_thinking
         self.model = settings.gemini_model
         self.name = f"gemini:{settings.gemini_model}"
 
@@ -53,8 +54,8 @@ class GeminiDrafter:
             model=self.model,
             contents=json.dumps(payload, ensure_ascii=False),
             config=self.types.GenerateContentConfig(
-                system_instruction=SYSTEM, response_mime_type="application/json",
-                response_schema=DraftOut, temperature=0.4,
+                system_instruction=SYSTEM, response_mime_type="application/json", response_schema=DraftOut,
+                thinking_config=self.types.ThinkingConfig(thinking_level=self.thinking),   # no temperature: not the control on Gemini 3.x
             ),
         )
         return resp.parsed if isinstance(resp.parsed, DraftOut) else DraftOut.model_validate_json(resp.text)
@@ -68,7 +69,8 @@ class GeminiDrafter:
         resp = self.client.models.generate_content(
             model=self.model,
             contents=f"Classify this customer reply (any language) as one of: interested, question, not_interested, stop, other.\nReply: {text}",
-            config=self.types.GenerateContentConfig(response_mime_type="application/json", response_schema=Intent, temperature=0),
+            config=self.types.GenerateContentConfig(response_mime_type="application/json", response_schema=Intent,
+                                                    thinking_config=self.types.ThinkingConfig(thinking_level="LOW")),
         )
         return resp.parsed.intent if resp.parsed else classify_reply_offline(text)
 

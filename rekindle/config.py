@@ -11,7 +11,12 @@ class Settings:
     send_mode: str = field(default_factory=lambda: os.getenv("REKINDLE_SEND_MODE", "dry_run"))
     project: str = field(default_factory=lambda: os.getenv("GOOGLE_CLOUD_PROJECT", ""))
     location: str = field(default_factory=lambda: os.getenv("GOOGLE_CLOUD_LOCATION", "us-central1"))
-    gemini_model: str = field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-2.5-flash"))
+    gemini_model: str = field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-3.8-flash"))
+    # Gemini 3.x on Vertex AI is served from the global endpoint (and us/eu multi-regions), not every regional one.
+    # Kept separate from the Cloud Run region so the two can differ.
+    gemini_location: str = field(default_factory=lambda: os.getenv("GEMINI_LOCATION", "global"))
+    # Gemini 3.x is steered with thinking_level (LOW | MEDIUM | HIGH), not temperature. LOW suits short drafts.
+    gemini_thinking: str = field(default_factory=lambda: os.getenv("GEMINI_THINKING_LEVEL", "LOW"))
     bq_dataset: str = field(default_factory=lambda: os.getenv("BQ_DATASET", "rekindle"))
     # Demo only: probability that the offline drafter emits a deliberately bad draft
     # so the guardrail can be seen working. Always 0 in gcp mode.

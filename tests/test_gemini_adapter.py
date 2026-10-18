@@ -22,7 +22,7 @@ class FakeModels:
 def make(reply):
     g = GeminiDrafter.__new__(GeminiDrafter)
     g.types = __import__("google.genai.types", fromlist=["types"])
-    g.model, g.name = "gemini-test", "gemini:gemini-test"
+    g.model, g.name, g.thinking = "gemini-test", "gemini:gemini-test", "LOW"
     g.client = SimpleNamespace(models=FakeModels(reply))
     return g
 
@@ -39,6 +39,7 @@ def test_payload_grounding_and_parse():
     assert {f["id"] for f in payload["facts"]} >= {"F1", "F2", "F3"}
     assert [o["id"] for o in payload["approved_offers"]] == ["O1", "O2"]
     assert cfg.response_mime_type == "application/json" and cfg.response_schema is DraftOut
+    assert cfg.thinking_config.thinking_level.value == "LOW" and cfg.temperature is None   # Gemini 3.x: thinking_level, not temperature
 
 
 def test_gemini_output_still_goes_through_the_guardrail():

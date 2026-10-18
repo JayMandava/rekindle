@@ -228,7 +228,7 @@ text(s, Inches(0.5), Inches(6.5), Inches(12.3), Inches(0.6), "Reviewed against t
 # 8 ── Technologies
 s = base("Technologies used in the solution")
 rows = [("Technology", "Role in ReKindle"),
-        ("Gemini on Vertex AI", "Message drafting with structured output (response_schema) that forces claim-to-fact citations; reply-intent classification"),
+        ("Gemini 3.8 Flash on Vertex AI", "Message drafting with structured output (response_schema) that forces claim-to-fact citations; reply-intent classification"),
         ("BigQuery", "Source of truth for customers and orders; deterministic RFM + dormancy SQL; append-only event log"),
         ("Cloud Run", "Agent orchestration (FastAPI), owner cockpit UI, WhatsApp webhook"),
         ("Firestore", "Real-time draft queue, trust state and suppression list for the cockpit"),
