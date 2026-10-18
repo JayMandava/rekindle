@@ -2,9 +2,21 @@
 
 An AI commerce-intelligence agent that turns a merchant's past-customer database into recurring revenue: it finds dormant customers, drafts personal WhatsApp and email re-engagement with Gemini, fact-checks every draft, and keeps the owner in control. **Human-supervised first, autonomy earned.**
 
-Built for the Google Cloud x Hack2skill **AI Builder Cup** (JAPAC). Pilot partner: Babytrail Photography, whose booking system ([baby-trails](https://github.com/JayMandava/baby-trails)) is the data source and WhatsApp channel. See [docs/BABYTRAILS_INTEGRATION.md](docs/BABYTRAILS_INTEGRATION.md) for what that system provides, what it lacks, and the changes the pilot needs.
+Built for the Google Cloud x Hack2skill **AI Builder Cup** (JAPAC). POC built with Babytrail Photography (Baby Trails), whose booking system ([baby-trails](https://github.com/JayMandava/baby-trails)) is the data source and WhatsApp channel; a pilot is planned. See [docs/BABYTRAILS_INTEGRATION.md](docs/BABYTRAILS_INTEGRATION.md) for what that system provides, what it lacks, and the changes the pilot needs.
 
-![cockpit](docs/screens/cockpit-review.png)
+**Live demo (synthetic data, dry-run sending):** https://jmandava-rekindle.hf.space (a free Space; the first load after idle is slow). Pitch deck: [docs/deck](docs/deck/).
+
+## Screenshots
+
+| Review queue: every draft shows its grounding facts, confidence and route | Blocked by the fact check: ungrounded drafts never reach a customer |
+|---|---|
+| ![Review queue](docs/screens/cockpit-review.png) | ![Blocked drafts](docs/screens/cockpit-blocked.png) |
+
+| Sent: approved and auto-sent messages (dry run) | A blocked draft up close |
+|---|---|
+| ![Sent messages](docs/screens/cockpit-sent.png) | ![Blocked card](docs/screens/blocked-card.png) |
+
+All customers, owner decisions, replies and orders in these screens are **simulated**.
 
 ## How it works
 
@@ -19,7 +31,9 @@ BigQuery (RFM + dormancy + journey)         deterministic: who, and when (from B
    -> replies (STOP in any language) and orders -> events -> Looker Studio
 ```
 
-Diagrams: [architecture](docs/diagrams/architecture.png), [process flow](docs/diagrams/flow.png). Deck: [docs/deck](docs/deck/).
+![Architecture](docs/diagrams/architecture.png)
+
+![Process flow](docs/diagrams/flow.png)
 
 ### The trust policy (one story, used everywhere)
 
