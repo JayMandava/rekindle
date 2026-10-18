@@ -301,7 +301,7 @@ bullets(s, Inches(0.6), Inches(1.6), Inches(12.1), Inches(5.4), [
 s = base("Provide links to your")
 for i, (k, v) in enumerate([("GitHub Public Repository", "https://github.com/JayMandava/rekindle"),
                             ("Demo Video Link (3 minutes)", "[add before submission]"),
-                            ("Final Product Link", "[add before submission: Cloud Run URL]")]):
+                            ("Final Product Link", "https://jmandava-rekindle.hf.space")]):
     text(s, Inches(0.7), Inches(1.8 + i * 0.9), Inches(12), Inches(0.7), [[(f"{k}: ", True), (v, False)]], size=22)
 
 # 14 ── Team
