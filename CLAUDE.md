@@ -1,6 +1,6 @@
 # ReKindle: instructions for Claude Code
 
-A working POC for the Google Cloud x Hack2skill AI Builder Cup. It finds dormant customers of a baby-photography studio (Baby Trails), drafts WhatsApp re-engagement with Gemini, fact-checks every draft, and routes it to the owner (or auto-sends once trust is earned). Read `docs/TEAM_HANDOFF.md` first: it has the full status, to-do order and open questions.
+A working POC for the Google Cloud x Hack2skill AI Builder Cup. It finds dormant customers of a baby-photography studio (Baby Trails), drafts WhatsApp re-engagement with Gemini, fact-checks every draft, and routes it to the owner (or auto-sends once trust is earned). See `README.md` and `docs/BABYTRAILS_INTEGRATION.md` for context.
 
 ## Commands
 ```bash
