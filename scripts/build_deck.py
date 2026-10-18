@@ -149,7 +149,7 @@ for i, (h, b, f) in enumerate(cols):
     text(s, x + Inches(0.12), Inches(3.25), Inches(2.66), Inches(0.5), h, size=20, bold=True)
     text(s, x + Inches(0.12), Inches(3.85), Inches(2.66), Inches(2.2), b, size=15)
 text(s, Inches(0.5), Inches(6.25), Inches(12.3), Inches(0.9),
-     "Built on Google Cloud: BigQuery, Gemini on Vertex AI, Cloud Run, Firestore, Looker Studio. Pilot partner: Babytrail Photography (Baby Trails), whose booking system already runs on GCP. A studio is the hardest test of personalization because every message touches a family milestone; the same engine generalizes to apparel, D2C, salons and clinics.",
+     "Built on Google Cloud: BigQuery, Gemini on Vertex AI, Cloud Run, Firestore, Looker Studio. POC built with Babytrail Photography (Baby Trails), whose booking system already runs on GCP; a pilot is planned. A studio is the hardest test of personalization because every message touches a family milestone; the same engine generalizes to apparel, D2C, salons and clinics.",
      size=14, color=MUTED)
 
 # 3 ── Opportunities
@@ -284,7 +284,7 @@ bullets(s, Inches(0.5), Inches(3.2), Inches(12.3), Inches(2.6), [
 card(s, Inches(0.5), Inches(5.95), Inches(12.3), Inches(1.25), REDBG)
 text(s, Inches(0.7), Inches(6.0), Inches(11.9), Inches(1.2),
      [[("Honest scope. ", True), ("This tests the guardrail with our own corruption set on synthetic data, not Gemini's real output or real customers. "
-       "Pilot metrics (auto-send rate, approval latency, time saved, recovered revenue) will be measured on Babytrail's data at the Nov 6 prototype evaluation and replace the simulated figures.", False)]], size=14)
+       "Pilot metrics (auto-send rate, approval latency, time saved, recovered revenue) are planned for the pilot with Baby Trails and will replace the simulated figures.", False)]], size=14)
 
 # 12 ── Future
 s = base("Additional details / future development")
