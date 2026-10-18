@@ -300,9 +300,11 @@ bullets(s, Inches(0.6), Inches(1.6), Inches(12.1), Inches(5.4), [
 # 13 ── Links
 s = base("Provide links to your")
 for i, (k, v) in enumerate([("GitHub Public Repository", "https://github.com/JayMandava/rekindle"),
-                            ("Demo Video Link (3 minutes)", "[add before submission]"),
+                            ("Demo Video Link (under 90 seconds)", "https://github.com/JayMandava/rekindle/blob/main/docs/demo/rekindle_demo.mp4"),
                             ("Final Product Link", "https://jmandava-rekindle.hf.space")]):
     text(s, Inches(0.7), Inches(1.8 + i * 0.9), Inches(12), Inches(0.7), [[(f"{k}: ", True), (v, False)]], size=22)
+s.shapes.add_movie(str(ROOT / "docs/demo/rekindle_demo.mp4"), Inches(0.7), Inches(4.45), Inches(4.8), Inches(2.7),
+                   poster_frame_image=str(ROOT / "docs/deck/assets/demo_poster.png"), mime_type="video/mp4")
 
 # 14 ── Team
 s = base("Team")
