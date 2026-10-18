@@ -67,6 +67,20 @@
       "auto_sent": 0
     },
     {
+      "corruption": "fabricated memory (no numbers/names)",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
+      "corruption": "fabricated preference (no numbers/names)",
+      "n": 233,
+      "blocked": 233,
+      "human_review": 0,
+      "auto_sent": 0
+    },
+    {
       "corruption": "unapproved free gift",
       "n": 233,
       "blocked": 233,
@@ -74,7 +88,7 @@
       "auto_sent": 0
     }
   ],
-  "total_corrupted": 2317,
+  "total_corrupted": 2783,
   "total_unsafe_auto_sent": 0,
-  "total_blocked": 2317
+  "total_blocked": 2783
 }
