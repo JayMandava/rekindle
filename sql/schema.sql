@@ -6,8 +6,8 @@ CREATE TABLE IF NOT EXISTS rekindle.customers (
   merchant_id STRING NOT NULL,
   name STRING, phone STRING, email STRING, language STRING,
   consent_whatsapp BOOL, consent_email BOOL, consent_ts TIMESTAMP,
-  anchor_name STRING,   -- e.g. child's first name
-  anchor_date DATE      -- e.g. child's date of birth; drives milestone triggers
+  anchor_name STRING,   -- child's first name (optional; Baby Trails does not collect it today)
+  anchor_date DATE      -- ESTIMATED birth date = shoot date - age at shoot; drives milestone triggers
 );
 
 CREATE TABLE IF NOT EXISTS rekindle.orders (
@@ -15,7 +15,8 @@ CREATE TABLE IF NOT EXISTS rekindle.orders (
   customer_id STRING NOT NULL,
   order_date DATE NOT NULL,
   amount NUMERIC NOT NULL,
-  product STRING
+  product STRING,
+  shoot_type STRING   -- newborn | baby | maternity | ...
 );
 
 -- Append-only audit log written by the agent (draft, route, decision, send, reply, order).

@@ -1,11 +1,15 @@
 """Orchestrates the loop: segment -> consent/suppression gate -> draft -> verify -> risk -> route -> send/queue."""
 from __future__ import annotations
 
+import json
+import os
 import statistics
 import uuid
+from pathlib import Path
 from datetime import date, datetime, timedelta, timezone
 from typing import Optional
 
+from .babytrails import bookings_to_rows
 from .channels import Sender, make_sender
 from .config import Merchant, Settings
 from .datasource import BigQueryDataSource, DataSource, LocalDataSource
@@ -13,7 +17,7 @@ from .drafting import Drafter, choose_channel, make_drafter, render
 from .models import Draft, DraftOut, Route, Status, Target
 from .routing import assess_risk, route as route_draft
 from .sample import generate
-from .segmentation import build_targets, segment_summary
+from .segmentation import build_targets, consent_summary, segment_summary
 from .store import FirestoreStore, MemoryStore, Store, now
 from .verifier import verify
 
@@ -33,7 +37,10 @@ class Engine:
         m = Merchant()
         if s.is_gcp:
             return cls(s, m, BigQueryDataSource(s), FirestoreStore(s.project, s.bq_dataset), make_drafter(s), make_sender(s, m))
-        c, o = generate(s.as_of)
+        if os.getenv("REKINDLE_BOOKINGS_JSON"):   # run the local cockpit on a real Baby Trails export
+            c, o = bookings_to_rows(json.loads(Path(os.environ["REKINDLE_BOOKINGS_JSON"]).read_text()))
+        else:
+            c, o = generate(s.as_of)
         return cls(s, m, LocalDataSource(c, o), MemoryStore(), make_drafter(s), make_sender(s, m))
 
     # -- data -----------------------------------------------------------------------------------
@@ -44,6 +51,9 @@ class Engine:
 
     def segments(self) -> dict:
         return segment_summary(self.rows(), self.settings.as_of, self.merchant)
+
+    def consent(self) -> dict:
+        return consent_summary(self.rows())
 
     def _contact(self, customer_id: str) -> tuple[Optional[str], Optional[str]]:
         for r in self.rows(refresh=False):
@@ -82,6 +92,9 @@ class Engine:
         channel = choose_channel(t)
         if channel is None:
             return None
+        langs = set(self.merchant.languages) & (getattr(self.drafter, "languages", None) or set(self.merchant.languages))
+        if t.language not in langs:
+            t = t.model_copy(update={"language": "en"})   # only approved template languages are sent; never pretend
         out: DraftOut = self.drafter.draft(t, channel, self.merchant)
         v = verify(out, t.facts, channel.value, self.merchant)
         if not v.passed:  # one regeneration with the verifier's reasons as feedback

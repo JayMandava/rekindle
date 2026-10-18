@@ -50,7 +50,7 @@ def create_app(engine: Optional[Engine] = None) -> FastAPI:
     def state():
         return {"mode": eng.settings.mode, "send_mode": eng.settings.send_mode, "drafter": eng.drafter.name,
                 "merchant": eng.merchant.name, "as_of": eng.settings.as_of.isoformat(),
-                "segments": eng.segments(), "kpis": eng.kpis()}
+                "segments": eng.segments(), "consent": eng.consent(), "kpis": eng.kpis()}
 
     @app.post("/api/campaign/run")
     def run(req: RunReq):

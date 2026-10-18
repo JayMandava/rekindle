@@ -107,3 +107,22 @@ def test_orders_attributed_within_window(engine):
     engine.record_order(other.customer_id, 5000.0, "Annual album")   # never contacted -> not attributed
     k = engine.kpis()
     assert k["recovered_revenue"] == 9000.0 and k["converted_customers"] == 1
+
+
+def test_only_approved_template_language_is_sent(engine):
+    assert any(r.get("language") == "ta" for r in engine.rows())            # the data has Tamil speakers
+    engine.run_campaign(limit=60)
+    assert {d.language for d in engine.store.list_drafts()} == {"en"}
+
+
+def test_engine_runs_on_a_real_style_export(tmp_path, monkeypatch):
+    import json
+    from datetime import date
+    from rekindle.config import Settings
+    from rekindle.engine import Engine
+    from rekindle.sample import generate_bookings
+    f = tmp_path / "bookings.json"
+    f.write_text(json.dumps(generate_bookings(date(2026, 10, 18), n=60)))
+    monkeypatch.setenv("REKINDLE_BOOKINGS_JSON", str(f))
+    e = Engine.build(Settings(mode="local", chaos=0.0, as_of=date(2026, 10, 18)))
+    assert e.consent()["total"] > 0 and e.run_campaign(limit=5)["drafted"] > 0

@@ -51,6 +51,7 @@ class Target(BaseModel):
     monetary: float
     last_order_date: date
     last_product: str
+    last_shoot_type: str = ""
     priority: float = 0.0
     vip: bool = False
     milestone_label: Optional[str] = None

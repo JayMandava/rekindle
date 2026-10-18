@@ -39,13 +39,13 @@ class LocalDataSource:
         self.db.executescript(
             """CREATE TABLE customers (customer_id TEXT PRIMARY KEY, merchant_id TEXT, name TEXT, phone TEXT,
                  email TEXT, language TEXT, consent_whatsapp INT, consent_email INT, anchor_name TEXT, anchor_date TEXT);
-               CREATE TABLE orders (order_id TEXT PRIMARY KEY, customer_id TEXT, order_date TEXT, amount REAL, product TEXT);"""
+               CREATE TABLE orders (order_id TEXT PRIMARY KEY, customer_id TEXT, order_date TEXT, amount REAL, product TEXT, shoot_type TEXT);"""
         )
         self.db.executemany(
             "INSERT INTO customers VALUES (:customer_id,:merchant_id,:name,:phone,:email,:language,"
             ":consent_whatsapp,:consent_email,:anchor_name,:anchor_date)", customers)
         self.db.executemany(
-            "INSERT INTO orders VALUES (:order_id,:customer_id,:order_date,:amount,:product)", orders)
+            "INSERT INTO orders VALUES (:order_id,:customer_id,:order_date,:amount,:product,:shoot_type)", [{"shoot_type": "", **o} for o in orders])
         self._next = len(orders)
 
     @classmethod
@@ -64,8 +64,8 @@ class LocalDataSource:
 
     def add_order(self, customer_id, order_date, amount, product):
         self._next += 1
-        self.db.execute("INSERT INTO orders VALUES (?,?,?,?,?)",
-                        (f"O{self._next:05d}", customer_id, order_date.isoformat(), amount, product))
+        self.db.execute("INSERT INTO orders VALUES (?,?,?,?,?,?)",
+                        (f"O{self._next:05d}", customer_id, order_date.isoformat(), amount, product, ""))
 
 
 class BigQueryDataSource:
@@ -99,6 +99,6 @@ class BigQueryDataSource:
 
         err = self.client.insert_rows_json(f"{self.ds}.orders", [{
             "order_id": f"live-{uuid.uuid4().hex[:10]}", "customer_id": customer_id,
-            "order_date": order_date.isoformat(), "amount": amount, "product": product}])
+            "order_date": order_date.isoformat(), "amount": amount, "product": product, "shoot_type": ""}])
         if err:
             raise RuntimeError(err)

@@ -44,7 +44,7 @@ class LiveSender:
             f"https://graph.facebook.com/v20.0/{os.environ['WHATSAPP_PHONE_NUMBER_ID']}/messages",
             headers={"Authorization": f"Bearer {os.environ['WHATSAPP_TOKEN']}"},
             json={"messaging_product": "whatsapp", "to": phone.lstrip("+"), "type": "template",
-                  "template": {"name": self.merchant.whatsapp_template, "language": {"code": d.language},
+                  "template": {"name": self.merchant.whatsapp_template, "language": {"code": "en"},
                                "components": [{"type": "body", "parameters": [
                                    {"type": "text", "text": first}, {"type": "text", "text": self.merchant.name},
                                    {"type": "text", "text": hook}]}]}},

@@ -12,7 +12,7 @@ from .models import Route, Status
 
 PRODUCT_PRICE = {"Newborn session": 9500, "Sitter session": 7500, "Cake smash session": 11000,
                  "Family portrait session": 8500, "Maternity session": 9000, "Annual album": 4500}
-REPLIES = {"interested": ["Yes please, do you have a slot this weekend?", "हाँ, बुक करना है"],
+REPLIES = {"interested": ["Yes please, do you have a slot this weekend?", "Yes, we would like to book"],
            "question": ["How much is the cake smash package?"],
            "not_interested": ["Not now, thanks"]}
 
@@ -54,9 +54,10 @@ def seed_demo(eng: Engine, seed: int = 11) -> dict:
         elif not stop_done and rng.random() < 0.05:
             eng.inbound("STOP", customer_id=d.customer_id); stop_done = True
     # one non-English opt-out, to show suppression works beyond English
+    lang_of = {r["customer_id"]: r.get("language") for r in eng.rows(refresh=False)}
     for d in eng.store.list_drafts():
-        if d.status == Status.pending and d.language == "hi":
-            eng.inbound("रोको", customer_id=d.customer_id)
+        if d.status == Status.pending and lang_of.get(d.customer_id) == "ta":
+            eng.inbound("நிறுத்து", customer_id=d.customer_id)
             break
     log["simulated"] = {"replies": replies, "orders": orders}
     return log

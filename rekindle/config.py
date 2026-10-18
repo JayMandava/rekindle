@@ -32,7 +32,7 @@ class Merchant:
     """Per-merchant configuration. One document per merchant in Firestore."""
 
     merchant_id: str = "babytrail"
-    name: str = "Babytrail Photography"
+    name: str = "Baby Trails"
     voice: str = (
         "Warm, personal and unhurried, like a studio that remembers your family. "
         "No pressure, no urgency, no exclamation-mark spam. At most one emoji."
@@ -45,6 +45,12 @@ class Merchant:
         {"id": "O1", "text": "a complimentary mini print set with your next session", "discount": False},
         {"id": "O2", "text": "10% off milestone sessions booked this month", "discount": True},
     )
-    milestone_months: tuple[int, ...] = (6, 12, 18, 24)
-    milestone_window_days: int = 30
-    whatsapp_template: str = "reengage_v1"
+    # Journey rules taken from Baby Trails' catalog: newborn customers are the natural audience for a
+    # Baby (3-12 months) session; a first birthday is the other natural moment. Ages are estimates.
+    newborn_to_baby_days: tuple[int, int] = (90, 150)
+    birthday_window_days: int = 45
+    baby_session_fact: str = "Baby milestone sessions are for babies aged 3 to 12 months"
+    whatsapp_template: str = "rk_reengage_v1"
+    # WhatsApp templates are approved per language, so the pilot writes English only. Tamil is roadmap, pending
+    # an approved Tamil template and native review of the wording.
+    languages: tuple[str, ...] = ("en",)

@@ -12,7 +12,7 @@ WITH order_agg AS (
   GROUP BY customer_id
 ),
 last_product AS (
-  SELECT o.customer_id, MIN(o.product) AS last_product
+  SELECT o.customer_id, MIN(o.product) AS last_product, MIN(o.shoot_type) AS last_shoot_type
   FROM {orders} o
   JOIN order_agg a ON a.customer_id = o.customer_id AND a.last_order_date = o.order_date
   GROUP BY o.customer_id
@@ -21,7 +21,7 @@ base AS (
   SELECT c.customer_id, c.name, c.phone, c.email, c.language,
          c.consent_whatsapp, c.consent_email,
          c.anchor_name, c.anchor_date,
-         a.last_order_date, a.frequency, a.monetary, p.last_product,
+         a.last_order_date, a.frequency, a.monetary, p.last_product, p.last_shoot_type,
          {days_between(@as_of, a.last_order_date)} AS recency_days
   FROM {customers} c
   JOIN order_agg a ON a.customer_id = c.customer_id
@@ -39,7 +39,7 @@ SELECT scored.*,
        CASE
          WHEN recency_days < @dormant_days THEN 'active'
          WHEN recency_days > @lost_days THEN 'lost'
-         WHEN f_score >= 4 AND m_score >= 4 THEN 'champion_dormant'
+         WHEN f_score >= 2 AND m_score >= 4 THEN 'champion_dormant'   -- repeat, high-spend customers
          WHEN frequency = 1 THEN 'one_time_lapsed'
          ELSE 'at_risk'
        END AS segment

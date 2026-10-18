@@ -42,7 +42,8 @@ CORRUPTIONS = {
     "invented staff name (sentence start)": lambda t, c: t + " Rohan will call you.",
     "invented staff name (mid-sentence)": lambda t, c: t + " Our colleague Rohan will call you.",
     "invented product": lambda t, c: t + " We now offer a Wedding Package.",
-    "wrong child name": lambda t, c: t.replace(c, "Kabir") if c else t,
+    "wrong session type": lambda t, c: re.sub(r"\b(Newborn|Baby milestone|Maternity)\b", lambda m: "Wedding" if m.group(1) != "Maternity" else "Newborn", t, count=1),
+    "invented price": lambda t, c: t + " Packages start at Rs 5,000.",
     "pressure / urgency": lambda t, c: t + " Last chance, hurry!",
     "unapproved link": lambda t, c: t + " See www.babytrail.example/offer",
     "guarantee": lambda t, c: t + " We guarantee you will love it.",
@@ -75,7 +76,7 @@ def main():
     for name, fn in CORRUPTIONS.items():
         n = blocked = human = auto = 0
         for t, ch, d in base:
-            child = next((f.value for f in t.facts if f.id == "F4"), "")
+            child = ""
             text = fn(d.text, child)
             if text == d.text:
                 continue                      # corruption not applicable to this draft

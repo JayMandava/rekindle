@@ -131,7 +131,7 @@ function render(){
   $('#kpis').innerHTML=kp.map(([v,l,s])=>`<div class="kpi"><div class="v">${v}</div><div class="l">${l}</div><div class="s">${s}</div></div>`).join('');
   const total=Math.max(1,...Object.values(S.segments));
   const order=['milestone_due','champion_dormant','at_risk','one_time_lapsed','lost','active'];
-  $('#segs').innerHTML=order.filter(s=>s in S.segments).map(s=>`<div class="seg"><div class="row"><span>${SEGNAME[s]}</span><b>${S.segments[s]}</b></div><div class="bar"><i style="width:${S.segments[s]/total*100}%;${s==='active'?'background:var(--muted)':''}"></i></div></div>`).join('')+'<div class="why">Milestone overlaps other segments. Active customers are never nudged; lost customers rank last.</div>';
+  $('#segs').innerHTML=order.filter(s=>s in S.segments).map(s=>`<div class="seg"><div class="row"><span>${SEGNAME[s]}</span><b>${S.segments[s]}</b></div><div class="bar"><i style="width:${S.segments[s]/total*100}%;${s==='active'?'background:var(--muted)':''}"></i></div></div>`).join('')+`<div class="why">Milestone overlaps other segments. Active customers are never nudged; lost customers rank last.</div><div class="why"><b>${S.consent.opted_in} of ${S.consent.total}</b> customers have opted in to re-engagement messages. Only they are ever drafted for.</div>`;
   const t=k.trust, p=Math.min(100,t.decisions/t.warmup*100);
   $('#trust').innerHTML=`<b>Autonomy</b><div class="meter"><i style="width:${p}%"></i></div>`+(t.auto_enabled
    ?`Earned. Low-risk drafts with confidence &ge; <b>${t.threshold.toFixed(3)}</b> auto-send. Everything else still waits for you.`

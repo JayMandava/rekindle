@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-import random
+import re
 from typing import Optional, Protocol
 
 from .config import Merchant, Settings
@@ -17,7 +17,7 @@ Rules:
   and give the id of the fact that supports it.
 - You may mention an offer only if it is in `approved_offers`; set `offer_id` and use its wording. Otherwise offer_id is null.
 - No urgency, pressure, guarantees, links, or health claims. At most one emoji. Warm, short, human.
-- Write in the customer's language code.
+- Write in English (the approved template language).
 - WhatsApp: `text` is ONE short paragraph (max 200 chars) that fills a template variable. Do NOT include a
   greeting, sign-off or opt-out line; the template adds them. Set subject to null.
 - Email: `text` is 2-4 short sentences (max 700 chars) starting with a greeting by first name; include a subject.
@@ -81,6 +81,7 @@ class OfflineDrafter:
     """
 
     name = "offline-stub"
+    languages = {"en"}   # the stub only writes English; Gemini handles the rest
 
     def __init__(self, chaos: float = 0.0):
         self.chaos = chaos
@@ -97,49 +98,42 @@ class OfflineDrafter:
     def draft(self, t, channel, merchant, feedback=None) -> DraftOut:
         f = {x.id: x.value for x in t.facts}
         child = f.get("F4", "your little one")
-        hi = t.language == "hi"
-        claims: list[Claim] = []
-        offer_id = None
         email = channel == Channel.email
         greet = f"Hi {t.first_name}, " if email else ""
+        cap = lambda x: x[0].upper() + x[1:]
+        claims: list[Claim] = []
+        offer_id = None
 
         if t.segment == "milestone_due" and "F5" in f:
-            ms = f["F5"]
-            text = (f"{greet}{ms} — we'd love to capture it. "
-                    f"Our last booking together was the {f['F2'].split(' on ')[0]}.")
-            claims = [Claim(span=ms, fact_id="F5"), Claim(span=f["F2"].split(" on ")[0], fact_id="F2")]
-            if hi:
-                text = f"{greet}{child} का खास दिन पास है ({ms.split(' turns ')[1]}) — हम इसे तस्वीरों में सहेजना चाहेंगे।"
-                claims = [Claim(span=child, fact_id="F4"), Claim(span=ms.split(" turns ")[1], fact_id="F5")]
-            offer_id = None
+            m = f["F5"]
+            if "F6" in f:
+                span = f["F6"].replace("Baby milestone sessions are for ", "")
+                text = f"{greet}{cap(m)}, right in the window for a baby milestone session ({span}). We'd love to see you again."
+                claims = [Claim(span=m, fact_id="F5"), Claim(span=span, fact_id="F6")]
+            else:
+                text = f"{greet}{cap(m)}, and we'd love to celebrate with you."
+                claims = [Claim(span=m, fact_id="F5")]
         elif t.segment == "champion_dormant":
             text = (f"{greet}it's been a while since your {f['F2']}, and you've booked {f['F3']} sessions with us. "
                     f"We'd love to see {child} again, with {merchant.offers[0]['text']}.")
-            claims = [Claim(span=f["F2"], fact_id="F2"), Claim(span=f["F3"], fact_id="F3"),
-                      Claim(span=child, fact_id="F4")]
+            claims = [Claim(span=f["F2"], fact_id="F2"), Claim(span=f["F3"], fact_id="F3")]
             offer_id = merchant.offers[0]["id"]
         else:
-            text = f"{greet}we still remember {child} and the {f['F2']}, and would love to see how {child} has grown."
-            claims = [Claim(span=child, fact_id="F4"), Claim(span=f["F2"], fact_id="F2")]
-            if hi:
-                text = f"{greet}हमें {child} का सत्र याद है ({f['F2']}) — उसे बड़ा होते देखना अच्छा लगेगा।"
-                claims = [Claim(span=f['F2'], fact_id="F2"), Claim(span=child, fact_id="F4")]
-
-        if email:
-            subject = f"{child} has grown — a note from {merchant.name}"
-            subject = subject if not hi else f"{merchant.name} की ओर से एक नोट"
-        else:
-            subject = None
+            text = f"{greet}we still remember your {f['F2']}, and would love to see how {child} has grown."
+            claims = [Claim(span=f["F2"], fact_id="F2")]
+        if "F4" in f:
+            claims.append(Claim(span=f["F4"], fact_id="F4")) if f["F4"] in text else None
+        subject = f"A note from {merchant.name}" if email else None
 
         if self._bad(t) and not (feedback and self._clean_on_retry(t)):
             kind = int(hashlib.sha256((t.customer_id + "k").encode()).hexdigest(), 16) % 3
-            if kind == 0:
+            if kind == 1 and "F5" in f and f["F5"] in text:
+                text = text.replace(f["F5"], re.sub(r"\b(\d+)\b", lambda m: str(int(m.group(1)) + 5), f["F5"], count=1))
+            elif kind == 2:
+                text += " Rohan from our team will call you."
+            else:
                 text += " Book this week and get 20% off!"
                 offer_id = None
-            elif kind == 1 and "F5" in f:
-                text = text.replace("1 year", "2 years")
-            else:
-                text += " Rohan from our team will call you."
         if not email:
             text = text[0].upper() + text[1:]
         return DraftOut(subject=subject, text=text, claims=claims, offer_id=offer_id)
@@ -154,15 +148,14 @@ def make_drafter(settings: Settings) -> Drafter:
 
 # --- deterministic rendering (template + compliance lines are never LLM-written) -----------------
 
-WA_TEMPLATE = "Hi {{1}}, this is {{2}}. {{3}} Reply STOP to opt out."
-OPT_OUT = {"en": "Reply STOP to opt out.", "hi": "रुकने के लिए STOP लिखें।"}
+WA_TEMPLATE = "Hi {{1}}, this is {{2}} with a note about your little one. {{3}} You can reply STOP anytime to opt out."
+OPT_OUT = {"en": "You can reply STOP anytime to opt out."}   # other languages need an approved template + native review
 
 
 def render(channel: Channel, t: Target, d: DraftOut, merchant: Merchant) -> str:
     opt = OPT_OUT.get(t.language, OPT_OUT["en"])
     if channel == Channel.whatsapp:
-        return WA_TEMPLATE.replace("{{1}}", t.first_name).replace("{{2}}", merchant.name).replace("{{3}}", d.text.strip()).replace(
-            "Reply STOP to opt out.", opt)
+        return WA_TEMPLATE.replace("{{1}}", t.first_name).replace("{{2}}", merchant.name).replace("{{3}}", d.text.strip())
     return f"{d.text.strip()}\n\n— {merchant.name}\n{opt}"
 
 

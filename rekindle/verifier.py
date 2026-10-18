@@ -91,6 +91,12 @@ def verify(draft: DraftOut, facts: list[Fact], channel: str, merchant: Merchant)
             covered.append((at, at + len(c.span), _tokens(fact.value)))
             at = low.find(c.span.lower(), at + 1)
 
+    # Merchant-approved offer wording is trusted content: it counts as covered where it appears verbatim.
+    offer = next((o for o in merchant.offers if o["id"] == draft.offer_id), None)
+    if offer and offer["text"].lower() in low:
+        at = low.find(offer["text"].lower())
+        covered.append((at, at + len(offer["text"]), _tokens(offer["text"])))
+
     # 2. Every number in the message must sit inside a verified claim whose fact contains it
     #    (or belong to the approved offer in use). A number that is true elsewhere is still wrong here.
     offer_nums = _tokens(next((o["text"] for o in merchant.offers if o["id"] == draft.offer_id), ""))
@@ -127,7 +133,6 @@ def verify(draft: DraftOut, facts: list[Fact], channel: str, merchant: Merchant)
             hard.append(f"long sentence with no cited fact: '{sent[:50]}'")
 
     # 3. Offers: only merchant-approved, and any discount language must map to the declared offer.
-    offer = next((o for o in merchant.offers if o["id"] == draft.offer_id), None)
     if draft.offer_id and offer is None:
         hard.append(f"unknown offer '{draft.offer_id}'")
     if offer is None and DISCOUNT_WORDS.search(text):
@@ -139,6 +144,8 @@ def verify(draft: DraftOut, facts: list[Fact], channel: str, merchant: Merchant)
             hard.append(why)
     if len(text) > MAX_LEN[channel]:
         hard.append(f"too long for {channel} ({len(text)} > {MAX_LEN[channel]})")
+    if channel == "whatsapp" and (re.search(r"[\n\t]| {5,}", draft.text)):
+        hard.append("WhatsApp template variables cannot contain newlines, tabs or 5+ spaces")
     if channel == "email" and not (draft.subject and draft.subject.strip()):
         hard.append("email needs a subject")
     if len(EMOJI.findall(text)) > 1:

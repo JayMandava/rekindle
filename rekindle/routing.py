@@ -61,6 +61,8 @@ def assess_risk(t: Target, d: DraftOut, merchant: Merchant) -> Risk:
         reasons.append("references a child's milestone")
     if high:
         return Risk(tier="high", reasons=reasons)
+    if t.last_shoot_type == "maternity":
+        reasons.append("pregnancy-related history, handle with care")
     if t.vip:
         reasons.append("top-decile customer")
     if t.recency_days > 365:
