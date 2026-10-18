@@ -8,8 +8,8 @@ ReKindle is a working POC: a loop that finds dormant customers, drafts a WhatsAp
 
 | Verified (69 tests, plus run in a browser) | Not verified yet |
 |---|---|
-| Segmentation SQL, opt-in and STOP handling, fact-check guardrail, risk routing, trust learning, API, owner cockpit, Baby Trails adapter | Gemini 3.8 Flash calls (config validated against the SDK, call logic tested with a fake client) |
-| Guardrail benchmark: 1,864 deliberately corrupted drafts, all blocked, 0 reached a customer without a human, 0% of clean drafts wrongly blocked (our own test set, on synthetic data, so not an independent benchmark) | Firestore, BigQuery, Cloud Run, Looker Studio, the Dockerfile and deploy scripts |
+| Segmentation SQL, opt-in and STOP handling, fact-check guardrail, risk routing, trust learning, API, owner cockpit, Baby Trails adapter, and the Firestore store (against the Firebase emulator) | Gemini 3.8 Flash calls (config validated against the SDK, call logic tested with a fake client) |
+| Guardrail benchmark: 1,864 deliberately corrupted drafts, all blocked, 0 reached a customer without a human, 0% of clean drafts wrongly blocked (our own test set, on synthetic data, so not an independent benchmark) | A real Firestore project, BigQuery, Cloud Run, Looker Studio, the Dockerfile and deploy scripts |
 | SQL parses as valid BigQuery | Real Airtable data, WhatsApp sending, Gmail sending |
 
 **Deadline:** one third-party listing gave the prototype deadline as **18 Oct 2026**, which may already be today. The hackathon site could not be opened from the build environment. **Check the official AI Builder Cup / Hack2skill page first** for dates, rules and judging criteria.
@@ -24,6 +24,8 @@ ReKindle is a working POC: a loop that finds dormant customers, drafts a WhatsAp
 6. Replace the team circles on slide 15 with photos, and make the repo public if it is not.
 
 ## 3. Live check (Firebase Spark plan, no billing needed)
+
+**If you have the Firebase CLI:** the Firestore side can be tested with no cloud at all using the emulator (`firebase emulators:start --only firestore --project demo-rekindle`, then `tests/test_firestore_emulator.py`; see README). It already passed once. The Firebase CLI's own login is not used by the Python app, so for a real project use `gcloud auth application-default login` or a service-account key (Firebase console > Project settings > Service accounts).
 
 Needs: a Firebase project on the Spark plan, and a Gemini API key. Use **synthetic or masked data only**: Google's free Gemini tier may use requests to improve its products (verify the current terms).
 

@@ -55,6 +55,14 @@ export PROJECT=your-project REGION=us-central1
 
 Then in Looker Studio create a data source on `rekindle.v_campaign_performance` (BigQuery). Real sending is off until you set `SEND_MODE=live` and provide the WhatsApp Cloud API and Gmail credentials in `.env.example`. WhatsApp outreach to dormant customers must use a pre-approved **Marketing** template; `rk_reengage_v1` (wording in the integration doc) has three variables: first name, merchant name, personalised sentence. Templates are approved per language, so the pilot is English-only.
 
+## Test Firestore with no cloud at all (Firebase emulator)
+
+```bash
+firebase emulators:start --only firestore --project demo-rekindle      # needs Java; config is firebase.json
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8085 GOOGLE_CLOUD_PROJECT=demo-rekindle python -m pytest tests/test_firestore_emulator.py
+```
+No credentials, no billing. The test is skipped when the emulator is not running.
+
 ## Run it with no billing account (Firebase Spark plan)
 
 For testing the real Gemini and Firestore without a billing-enabled project:
@@ -80,7 +88,8 @@ What this does not cover: Cloud Run, BigQuery and Looker Studio need a billing a
 | Baby Trails adapter (`babytrails.py`, `import_babytrails.py`) | Tested against Airtable-shaped rows written from Baby Trails' source; **not yet run against the live Airtable base** |
 | `sql/*.sql` | Parsed as valid BigQuery SQL (sqlglot); **not yet run against BigQuery** |
 | Gemini adapter (Gemini 3.8 Flash; Vertex or API key) | Request config and structured-output schema validated against the real SDK; call logic tested with a fake client; reaches Google's endpoint but **not yet run with valid credentials**. `scripts/live_check.py` is the preflight |
-| Firestore store, BigQuery data source/events | Implemented; **not yet run against real services** |
+| Firestore store | **Verified against the Firebase Firestore emulator** (persistence across restarts, suppression, trust state, events); not yet against a real project |
+| BigQuery data source/events | Implemented; **not yet run against real BigQuery** |
 | WhatsApp Cloud API and Gmail senders | Implemented; **not exercised** (dry-run is the default) |
 | Dockerfile, deploy scripts | Written; **not yet run** |
 | Looker Studio dashboard | SQL view provided; the dashboard itself still has to be built in the console |

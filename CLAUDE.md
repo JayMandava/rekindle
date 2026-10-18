@@ -5,7 +5,7 @@ A working POC for the Google Cloud x Hack2skill AI Builder Cup. It finds dormant
 ## Commands
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest -q                                        # 69 tests, no credentials needed
+python -m pytest -q                                        # 70 tests (69 + 1 emulator test that skips without the emulator), no credentials needed
 REKINDLE_AS_OF=2026-10-18 uvicorn rekindle.api:app_factory --factory --port 8080   # cockpit; click "Load demo scenario"
 python scripts/live_check.py                               # preflight for live Gemini / Firestore / BigQuery (mode-dependent)
 python scripts/eval_guardrail.py --json docs/guardrail_eval.json
@@ -14,7 +14,11 @@ python scripts/build_deck.py                               # rebuilds docs/deck/
 Modes via `REKINDLE_MODE`: `local` (default; SQLite, in-memory, offline stub drafter), `spark` (SQLite + Firestore + Gemini by API key, no billing), `gcp` (BigQuery + Firestore + Vertex AI, needs billing). `REKINDLE_DATA`, `REKINDLE_STORE`, `REKINDLE_LLM` (`offline|apikey|vertex`) override one piece.
 
 ## What is verified and what is not
-Verified: everything in `local` mode (69 tests, run in a browser). **Not yet run live:** Gemini 3.8 Flash, Firestore, BigQuery, Cloud Run, the Dockerfile and deploy scripts, the Airtable fetch, WhatsApp and Gmail sending. The first live run will likely need small fixes. Do the live check first; it is the biggest unknown.
+Verified: everything in `local` mode (69 tests, run in a browser), and the Firestore store against the Firebase emulator (`tests/test_firestore_emulator.py`). **Not yet run live:** Gemini 3.8 Flash, a real Firestore project, BigQuery, Cloud Run, the Dockerfile and deploy scripts, the Airtable fetch, WhatsApp and Gmail sending. The first live run will likely need small fixes. Do the live check first; it is the biggest unknown.
+
+## Firebase CLI (you may already have it)
+- No-cloud Firestore test: `firebase emulators:start --only firestore --project demo-rekindle`, then run the emulator test (see README). Needs Java.
+- Real project: `firebase login`, `firebase projects:create`, `firebase firestore:databases:create`. **The Firebase CLI's login is not used by the Python client.** For credentials use `gcloud auth application-default login`, or a service-account key from the Firebase console (Project settings > Service accounts) passed as `GOOGLE_APPLICATION_CREDENTIALS`. `deploy/spark_bootstrap.sh` does the gcloud version end to end.
 
 ## Rules for working here
 - **Never print, log, commit or ask me to paste secrets** (API keys, service-account JSON, tokens). Read them from environment variables only. List variable names, never values.
