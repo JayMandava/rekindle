@@ -68,6 +68,8 @@ python scripts/live_check.py                   # preflight: real drafts through 
 uvicorn rekindle.api:app_factory --factory --port 8080
 ```
 
+**One-paste version for Google Cloud Shell** (already signed in as you; creates a least-privilege service account with a temporary key, asks for your Gemini key hidden, runs the check, deletes the key): `./deploy/spark_bootstrap.sh YOUR_FIREBASE_PROJECT_ID`. The control flow is tested against a stubbed `gcloud`; it has not run against real Google Cloud.
+
 What this does not cover: Cloud Run, BigQuery and Looker Studio need a billing account, so on Spark the app runs on your machine and segmentation uses the same SQL on SQLite. **Use synthetic or masked data only**: Google's free Gemini API tier may use requests to improve its products (verify the current terms), and the free tier has low rate limits. Pieces can be mixed with `REKINDLE_DATA` (local|bigquery), `REKINDLE_STORE` (memory|firestore) and `REKINDLE_LLM` (offline|apikey|vertex).
 
 ## Status: what is and is not verified
