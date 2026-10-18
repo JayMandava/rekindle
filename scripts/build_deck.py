@@ -308,13 +308,10 @@ s.shapes.add_movie(str(ROOT / "docs/demo/rekindle_demo.mp4"), Inches(0.7), Inche
 
 # 14 ── Team
 s = base("Team")
-for i, n in enumerate(["Abhishek", "Rishub", "Jeyanth", "Pratheek"]):
-    cx = Inches(1.4 + i * 2.9)
-    c = s.shapes.add_shape(MSO_SHAPE.OVAL, cx, Inches(2.2), Inches(2.0), Inches(2.0))
-    c.fill.solid(); c.fill.fore_color.rgb = BLUEBG; c.line.fill.background()
-    text(s, cx, Inches(2.2), Inches(2.0), Inches(2.0), n[0], size=54, bold=True, color=BLUE, align=PP_ALIGN.CENTER, anchor=MSO_ANCHOR.MIDDLE)
-    text(s, cx - Inches(0.3), Inches(4.4), Inches(2.6), Inches(0.5), n, size=22, bold=True, align=PP_ALIGN.CENTER)
-text(s, Inches(0.5), Inches(6.2), Inches(12.3), Inches(0.5), "Replace circles with team photos before submission.", size=14, color=MUTED, align=PP_ALIGN.CENTER)
+D, GAP = 2.5, 0.6
+x0 = (13.333 - (4 * D + 3 * GAP)) / 2
+for i, n in enumerate(["abhishek", "rishub", "jeyanth", "pratheek"]):
+    s.shapes.add_picture(str(A / f"team_{n}.png"), Inches(x0 + i * (D + GAP)), Inches(2.8), width=Inches(D), height=Inches(D))
 
 # 15 ── Thank you
 s = prs.slides.add_slide(BLANK)
